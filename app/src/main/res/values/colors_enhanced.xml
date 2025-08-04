@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Model Status Dashboard Colors -->
+    <color name="model_status_background">#F8F9FA</color>
+    <color name="model_status_title">#1A1A1A</color>
+    <color name="model_variant_text">#2E7D32</color>
+    <color name="model_size_text">#666666</color>
+    
+    <!-- Status Badge Colors -->
+    <color name="status_checking">#FF9800</color>
+    <color name="status_missing">#F44336</color>
+    <color name="status_available">#2196F3</color>
+    <color name="status_downloading">#9C27B0</color>
+    <color name="status_initializing">#3F51B5</color>
+    <color name="status_ready">#4CAF50</color>
+    <color name="status_error">#F44336</color>
+    <color name="status_corrupted">#FF5722</color>
+    <color name="status_failed">#D32F2F</color>
+    
+    <!-- Download Progress Colors -->
+    <color name="download_progress_text">#424242</color>
+    <color name="download_percentage_text">#1976D2</color>
+    <color name="download_progress_tint">#2196F3</color>
+    <color name="download_speed_text">#757575</color>
+    <color name="download_eta_text">#757575</color>
+    
+    <!-- Model Selection Colors -->
+    <color name="model_selection_title">#1A1A1A</color>
+    <color name="button_recommended">#E8F5E8</color>
+    <color name="button_recommended_border">#4CAF50</color>
+    <color name="button_normal">#FFFFFF</color>
+    <color name="button_normal_border">#CCCCCC</color>
+    
+    <!-- UI Enhancement Colors -->
+    <color name="image_placeholder">#EEEEEE</color>
+    <color name="image_selected_border">#4CAF50</color>
+    <color name="question_input_background">#FAFAFA</color>
+    <color name="response_card_background">#FFFFFF</color>
+    
+    <!-- Semantic Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+    <color name="processing">#9C27B0</color>
+</resources>

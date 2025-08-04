@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gemma 3n Impact</string>
+    <string name="ask_image_title">🤖 Gemma 3n Impact</string>
+    <string name="select_image">📸 Select Image</string>
+    <string name="take_photo">📷 Take Photo</string>
+    <string name="enter_question">💭 Ask Gemma 3n about this image...</string>
+    <string name="ask_button">🤖 Ask Gemma 3n</string>
+    <string name="loading">Processing...</string>
+    <string name="error_no_image">Please select an image first</string>
+    <string name="error_no_question">Please enter a question</string>
+    <string name="error_model_loading">Error loading model. Please try again.</string>
+    <string name="model_loading">Loading Gemma 3n model...</string>
+    <string name="model_loaded">Model loaded successfully!</string>
+    <string name="model_not_loaded">Please wait for model to load</string>
+    <string name="download_model">Download Model</string>
+    <string name="downloading_model">Downloading...</string>
+    <string name="retry_download">Retry Download</string>
+    <string name="download_progress">Downloading Gemma 3n model... %1$d%%</string>
+    <string name="download_complete">Model downloaded successfully!</string>
+    <string name="download_failed">Download failed: %1$s</string>
+    <string name="no_internet">No internet connection available</string>
+</resources>
