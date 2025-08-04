@@ -10,7 +10,8 @@ data class ChatMessage(
     val text: String,
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),
-    val messageType: MessageType = MessageType.TEXT
+    val messageType: MessageType = MessageType.TEXT,
+    val hasImageAttachment: Boolean = false // Indicates if message was sent with an image
 ) {
 
     /**
@@ -43,11 +44,29 @@ data class ChatMessage(
             )
         }
 
+        fun createUserMessageWithImage(text: String): ChatMessage {
+            return ChatMessage(
+                text = text,
+                isUser = true,
+                messageType = MessageType.TEXT,
+                hasImageAttachment = true
+            )
+        }
+
         fun createAIResponse(text: String): ChatMessage {
             return ChatMessage(
                 text = text,
                 isUser = false,
                 messageType = MessageType.AI_RESPONSE
+            )
+        }
+
+        fun createAIResponseToImage(text: String): ChatMessage {
+            return ChatMessage(
+                text = text,
+                isUser = false,
+                messageType = MessageType.AI_RESPONSE,
+                hasImageAttachment = true // Indicates this response was to an image query
             )
         }
 

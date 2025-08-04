@@ -374,17 +374,17 @@ class UIStateManager(private val binding: ActivityMainBinding, private val conte
         binding.askButton.visibility = View.GONE
         binding.questionInput.visibility = View.GONE
 
-        // HIDE IMAGE FEATURES since vision modality is disabled
-        binding.selectedImage.visibility = View.GONE
+        // HIDE OLD IMAGE BUTTONS - using integrated approach now
+        // selectedImage removed from layout for cleaner UI
         binding.selectImageButton.visibility = View.GONE
         binding.takePhotoButton.visibility = View.GONE
-        binding.titleText.text = "💬 Gemma 3n Text Chat"
+        binding.titleText.visibility = View.GONE // Hide title for cleaner UI
 
         // Ensure settings button is always enabled
         binding.settingsButton.isEnabled = true
         binding.settingsButton.alpha = 1.0f
 
-        Log.d(TAG, "Chat interface now visible and ready for text-only input")
+        Log.d(TAG, "Chat interface now visible and ready for text and image input")
     }
     
     /**
@@ -433,13 +433,12 @@ class UIStateManager(private val binding: ActivityMainBinding, private val conte
     }
     
     /**
-     * Show image selected state
+     * Show image selected state (legacy method for compatibility)
      * @param bitmap The selected image bitmap
      */
     fun showImageSelected(bitmap: Bitmap) {
-        Log.d(TAG, "Showing image selected state")
-        binding.selectedImage.setImageBitmap(bitmap)
-        // Additional UI updates can be added here
+        Log.d(TAG, "Image selected - using integrated preview instead of legacy view")
+        // Legacy selectedImage view removed - using integrated preview in MainActivity
     }
     
     /**

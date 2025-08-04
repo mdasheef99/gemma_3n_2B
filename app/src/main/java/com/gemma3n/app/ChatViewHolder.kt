@@ -15,10 +15,18 @@ import androidx.recyclerview.widget.RecyclerView
 class UserMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val messageText: TextView = itemView.findViewById(R.id.messageText)
     private val messageTime: TextView = itemView.findViewById(R.id.messageTime)
-    
+    private val imageIndicator: TextView = itemView.findViewById(R.id.imageIndicator)
+
     fun bind(message: ChatMessage) {
         messageText.text = message.text
         messageTime.text = message.getFormattedTime()
+
+        // Show image indicator if message had image attachment
+        if (message.hasImageAttachment) {
+            imageIndicator.visibility = View.VISIBLE
+        } else {
+            imageIndicator.visibility = View.GONE
+        }
     }
 }
 
@@ -28,10 +36,18 @@ class UserMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
 class AIMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val messageText: TextView = itemView.findViewById(R.id.messageText)
     private val messageTime: TextView = itemView.findViewById(R.id.messageTime)
-    
+    private val imageIndicator: TextView = itemView.findViewById(R.id.imageIndicator)
+
     fun bind(message: ChatMessage) {
         messageText.text = message.text
         messageTime.text = message.getFormattedTime()
+
+        // Show image indicator if message was response to image
+        if (message.hasImageAttachment) {
+            imageIndicator.visibility = View.VISIBLE
+        } else {
+            imageIndicator.visibility = View.GONE
+        }
     }
 }
 

@@ -128,12 +128,23 @@ class MainActivity : AppCompatActivity(),
     private fun setupUI() {
         Log.d(TAG, "Setting up UI...")
 
+        // Legacy image buttons (now hidden)
         binding.selectImageButton.setOnClickListener {
             imageProcessor.selectImage()
         }
 
         binding.takePhotoButton.setOnClickListener {
             imageProcessor.takePhoto()
+        }
+
+        // New integrated image upload button
+        binding.attachImageButton.setOnClickListener {
+            showImageSelectionDialog()
+        }
+
+        // Remove image button
+        binding.removeImageButton.setOnClickListener {
+            removeSelectedImage()
         }
 
         // Set up settings button
@@ -245,8 +256,13 @@ class MainActivity : AppCompatActivity(),
         // Clear input field
         binding.messageInput.text.clear()
 
-        // Add user message to chat
-        val userMessage = ChatMessage.createUserMessage(messageText)
+        // Add user message to chat (check if image is attached)
+        val hasImage = imageProcessor.getCurrentBitmap() != null
+        val userMessage = if (hasImage) {
+            ChatMessage.createUserMessageWithImage(messageText)
+        } else {
+            ChatMessage.createUserMessage(messageText)
+        }
         chatAdapter.addMessage(userMessage)
 
         // Scroll to show user's message
@@ -276,17 +292,34 @@ class MainActivity : AppCompatActivity(),
                     hideKeyboard()
                 }
 
-                // Process on background thread
-                val response = modelManager.processTextQuestion(message)
+                // Process on background thread - check if image is attached
+                val bitmap = imageProcessor.getCurrentBitmap()
+                val response = if (bitmap != null) {
+                    Log.d(TAG, "Processing message with image attachment")
+                    modelManager.processImageQuestion(message, bitmap)
+                } else {
+                    Log.d(TAG, "Processing text-only message")
+                    modelManager.processTextQuestion(message)
+                }
 
                 // Update UI on main thread
                 withContext(Dispatchers.Main) {
-                    // Add AI response to chat
-                    val aiMessage = ChatMessage.createAIResponse(response)
+                    // Add AI response to chat (indicate if it was response to image)
+                    val wasImageQuery = bitmap != null
+                    val aiMessage = if (wasImageQuery) {
+                        ChatMessage.createAIResponseToImage(response)
+                    } else {
+                        ChatMessage.createAIResponse(response)
+                    }
                     chatAdapter.addMessage(aiMessage)
 
                     // CRITICAL FIX: Scroll to bottom to show new message
                     binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
+
+                    // Clear image after successful processing
+                    if (imageProcessor.getCurrentBitmap() != null) {
+                        removeSelectedImage()
+                    }
 
                     binding.sendButton.isEnabled = true
                     binding.sendButton.text = "Send"
@@ -324,6 +357,51 @@ class MainActivity : AppCompatActivity(),
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.messageInput.windowToken, 0)
+    }
+
+    /**
+     * Show image selection dialog (Gallery or Camera)
+     */
+    private fun showImageSelectionDialog() {
+        val options = arrayOf("📸 Select from Gallery", "📷 Take Photo")
+
+        AlertDialog.Builder(this)
+            .setTitle("Add Image")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> imageProcessor.selectImage() // Gallery
+                    1 -> imageProcessor.takePhoto()   // Camera
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    /**
+     * Remove the currently selected image
+     */
+    private fun removeSelectedImage() {
+        imageProcessor.clearImage()
+        hideImagePreview()
+    }
+
+    /**
+     * Show image preview with selected image
+     */
+    private fun showImagePreview(bitmap: Bitmap) {
+        binding.selectedImagePreview.setImageBitmap(bitmap)
+        binding.imagePreviewLayout.visibility = View.VISIBLE
+
+        // Update hint text to indicate image is attached
+        binding.messageInput.hint = "Ask a question about this image..."
+    }
+
+    /**
+     * Hide image preview
+     */
+    private fun hideImagePreview() {
+        binding.imagePreviewLayout.visibility = View.GONE
+        binding.messageInput.hint = "Type your message..."
     }
 
     /**
@@ -469,6 +547,11 @@ class MainActivity : AppCompatActivity(),
      */
     override fun onImageSelected(bitmap: Bitmap) {
         Log.d(TAG, "Image selected: ${bitmap.width}x${bitmap.height}")
+
+        // Show integrated image preview
+        showImagePreview(bitmap)
+
+        // Also update legacy UI state manager
         uiStateManager.showImageSelected(bitmap)
     }
 

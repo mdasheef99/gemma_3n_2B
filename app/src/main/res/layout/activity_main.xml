@@ -16,65 +16,48 @@
             android:id="@+id/titleText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/ask_image_title"
-            android:textSize="24sp"
-            android:textStyle="bold"
+            android:text="AI Chat"
+            android:textSize="16sp"
+            android:textStyle="normal"
             android:gravity="center"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <ImageView
-            android:id="@+id/selectedImage"
+        <!-- Old image view removed for cleaner UI -->
+
+        <!-- Hidden legacy buttons for compatibility -->
+        <Button
+            android:id="@+id/selectImageButton"
             android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_marginTop="16dp"
-            android:background="@android:color/darker_gray"
-            android:scaleType="centerCrop"
-            android:contentDescription="Selected image"
-            app:layout_constraintTop_toBottomOf="@id/titleText"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/takePhotoButton"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Subtle settings button in top-right corner -->
+        <Button
+            android:id="@+id/settingsButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="8dp"
+            android:text="⚙️"
+            android:textSize="14sp"
+            android:background="@android:color/transparent"
+            android:alpha="0.6"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-
-        <LinearLayout
-            android:id="@+id/buttonLayout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/selectedImage"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <Button
-                android:id="@+id/selectImageButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:text="@string/select_image" />
-
-            <Button
-                android:id="@+id/takePhotoButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:text="@string/take_photo" />
-
-            <Button
-                android:id="@+id/settingsButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.7"
-                android:layout_marginStart="4dp"
-                android:text="⚙️"
-                android:textSize="16sp" />
-
-        </LinearLayout>
 
         <!-- Download Section (shown when model is missing) -->
         <LinearLayout
@@ -86,7 +69,7 @@
             android:padding="16dp"
             android:background="@android:drawable/dialog_holo_light_frame"
             android:visibility="visible"
-            app:layout_constraintTop_toBottomOf="@id/buttonLayout"
+            app:layout_constraintTop_toBottomOf="@id/settingsButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -156,57 +139,126 @@
 
         </LinearLayout>
 
-        <!-- Chat RecyclerView -->
+        <!-- Chat RecyclerView - Expanded to take full space -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chatRecyclerView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:background="@android:color/white"
             android:clipToPadding="false"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/downloadSection"
+            app:layout_constraintTop_toBottomOf="@id/settingsButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/chatInputLayout" />
+            app:layout_constraintBottom_toTopOf="@id/imagePreviewLayout" />
 
-        <!-- Chat input layout -->
+        <!-- Image preview layout (shown when image is selected) -->
+        <LinearLayout
+            android:id="@+id/imagePreviewLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@color/light_gray"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/chatInputLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:id="@+id/selectedImagePreview"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="8dp"
+                android:scaleType="centerCrop"
+                android:background="@android:drawable/edit_text"
+                android:contentDescription="Selected image preview" />
+
+            <TextView
+                android:id="@+id/imagePreviewText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:text="Image selected. Type your question about this image."
+                android:textSize="14sp"
+                android:textColor="@android:color/black" />
+
+            <Button
+                android:id="@+id/removeImageButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:text="×"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:background="@android:drawable/btn_default"
+                android:contentDescription="Remove image" />
+
+        </LinearLayout>
+
+        <!-- Modern chat input layout -->
         <LinearLayout
             android:id="@+id/chatInputLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp"
-            android:background="@android:color/white"
-            android:elevation="4dp"
+            android:padding="12dp"
+            android:background="@color/light_gray"
+            android:elevation="8dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Prominent image attachment button -->
+            <Button
+                android:id="@+id/attachImageButton"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginEnd="12dp"
+                android:layout_gravity="bottom"
+                android:text="📎"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:background="@android:drawable/btn_default"
+                android:backgroundTint="@color/teal_200"
+                android:textColor="@android:color/white"
+                android:contentDescription="Attach image" />
 
             <EditText
                 android:id="@+id/messageInput"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="12dp"
                 android:hint="Type your message..."
-                android:inputType="textMultiLine"
+                android:inputType="textMultiLine|textCapSentences"
                 android:maxLines="4"
-                android:minHeight="48dp"
-                android:padding="12dp"
-                android:background="@android:drawable/edit_text" />
+                android:minHeight="52dp"
+                android:padding="16dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@android:drawable/edit_text"
+                android:backgroundTint="@android:color/white" />
 
             <Button
                 android:id="@+id/sendButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
+                android:layout_gravity="bottom"
                 android:text="Send"
-                android:textSize="14sp"
-                android:minWidth="80dp" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@android:drawable/btn_default"
+                android:backgroundTint="@color/teal_700"
+                android:minWidth="90dp" />
 
         </LinearLayout>
 
@@ -227,7 +279,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/buttonLayout"
+            app:layout_constraintTop_toBottomOf="@id/settingsButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

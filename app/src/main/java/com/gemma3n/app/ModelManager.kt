@@ -314,14 +314,15 @@ class ModelManager(private val context: Context) {
                 Log.d(TAG, "=== CONFIGURING MEDIAPIPE LLM OPTIONS ===")
                 Log.d(TAG, "Backend: CPU (changed from GPU for compatibility)")
                 Log.d(TAG, "Max tokens: 512")
-                Log.d(TAG, "Vision modality: DISABLED (for basic text testing)")
+                Log.d(TAG, "Vision modality: ENABLED (for image processing)")
+                Log.d(TAG, "Max images: 1 per query")
 
                 // Create LLM Inference options - MODIFIED FOR BASIC TESTING
                 val options = LlmInference.LlmInferenceOptions.builder()
                     .setModelPath(modelPath)
                     .setMaxTokens(512)
                     .setPreferredBackend(LlmInference.Backend.CPU) // CHANGED: Use CPU instead of GPU
-                    .setMaxNumImages(0) // CHANGED: Disable image support for basic testing
+                    .setMaxNumImages(1) // ENABLED: Allow 1 image per query for vision processing
                     .build()
 
                 Log.d(TAG, "LlmInference options created successfully")
@@ -330,8 +331,8 @@ class ModelManager(private val context: Context) {
                 llmInference = LlmInference.createFromOptions(context, options)
                 Log.d(TAG, "LlmInference engine created successfully!")
 
-                Log.d(TAG, "Creating LlmInferenceSession with basic text configuration...")
-                Log.d(TAG, "Session parameters: TopK=40, Temperature=0.7f, Vision=DISABLED")
+                Log.d(TAG, "Creating LlmInferenceSession with vision modality enabled...")
+                Log.d(TAG, "Session parameters: TopK=40, Temperature=0.7f, Vision=ENABLED")
 
                 // Create inference session - MODIFIED FOR BASIC TEXT TESTING
                 llmSession = LlmInferenceSession.createFromOptions(
@@ -341,7 +342,7 @@ class ModelManager(private val context: Context) {
                         .setTemperature(0.7f)
                         .setGraphOptions(
                             GraphOptions.builder()
-                                .setEnableVisionModality(false) // CHANGED: Disable vision for basic testing
+                                .setEnableVisionModality(true) // ENABLED: Vision modality for image processing
                                 .build()
                         )
                         .build()
@@ -487,7 +488,7 @@ class ModelManager(private val context: Context) {
                     .setTemperature(0.7f)
                     .setGraphOptions(
                         GraphOptions.builder()
-                            .setEnableVisionModality(false)
+                            .setEnableVisionModality(true) // ENABLED: Vision modality for image processing
                             .build()
                     )
                     .build()
@@ -529,20 +530,37 @@ class ModelManager(private val context: Context) {
             val mpImage = BitmapImageBuilder(bitmap).build()
             Log.d(TAG, "Created MediaPipe image")
 
-            // Use session-based multimodal processing (tutorial pattern)
-            // Add the text query first
-            llmSession!!.addQueryChunk("Analyze this image and answer the following question: $question")
-            Log.d(TAG, "Added query chunk to session")
+            // CRITICAL FIX: Create a fresh session for each image query to prevent context overflow
+            val inference = llmInference ?: return "Model inference engine not available"
 
-            // Add the image to the session
-            llmSession!!.addImage(mpImage)
-            Log.d(TAG, "Added image to session")
+            // Create fresh session with clean context for each query
+            val freshSession = LlmInferenceSession.createFromOptions(
+                inference,
+                LlmInferenceSession.LlmInferenceSessionOptions.builder()
+                    .setTopK(40)
+                    .setTemperature(0.7f)
+                    .setGraphOptions(
+                        GraphOptions.builder()
+                            .setEnableVisionModality(true) // ENABLED: Vision modality for image processing
+                            .build()
+                    )
+                    .build()
+            )
+            Log.d(TAG, "Created fresh session for image query to prevent context overflow")
 
-            // Generate response using the session
-            val response = llmSession!!.generateResponse()
-            Log.d(TAG, "Generated response: ${response?.take(100)}...")
+            // Add the image to the fresh session first
+            freshSession.addImage(mpImage)
+            Log.d(TAG, "Added image to fresh session")
 
-            response ?: "No response generated"
+            // Add the text query
+            freshSession.addQueryChunk(question)
+            Log.d(TAG, "Added query chunk to fresh session")
+
+            // Generate response using the fresh session
+            val response = freshSession.generateResponse()
+            Log.d(TAG, "Generated image response: ${response?.take(100)}...")
+
+            response ?: "I apologize, but I couldn't generate a response about this image. Please try again."
 
         } catch (e: Exception) {
             Log.e(TAG, "Error in Gemma 3n inference", e)
