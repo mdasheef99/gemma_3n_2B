@@ -218,9 +218,9 @@
             <!-- Prominent image attachment button -->
             <Button
                 android:id="@+id/attachImageButton"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_marginEnd="12dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
                 android:layout_gravity="bottom"
                 android:text="📎"
                 android:textSize="18sp"
@@ -233,14 +233,14 @@
             <EditText
                 android:id="@+id/messageInput"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="8dp"
                 android:hint="Type your message..."
                 android:inputType="textCapSentences"
-                android:maxLines="2"
-                android:minHeight="56dp"
-                android:maxHeight="80dp"
+                android:maxLines="1"
+                android:minHeight="48dp"
+                android:maxHeight="48dp"
                 android:padding="16dp"
                 android:textSize="16sp"
                 android:textColor="@android:color/black"
@@ -251,9 +251,9 @@
             <!-- Enhanced Multilingual Inventory Actions Dropdown -->
             <Spinner
                 android:id="@+id/inventoryActionsSpinner"
-                android:layout_width="140dp"
-                android:layout_height="56dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
                 android:layout_gravity="center_vertical"
                 android:background="@drawable/dropdown_background"
                 android:backgroundTint="@color/md_surface_variant"
@@ -264,16 +264,15 @@
 
             <Button
                 android:id="@+id/sendButton"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
-                android:layout_gravity="bottom"
+                android:layout_width="60dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
                 android:text="Send"
-                android:textSize="16sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:background="@android:drawable/btn_default"
-                android:backgroundTint="@color/teal_700"
-                android:minWidth="80dp" />
+                android:backgroundTint="@color/teal_700" />
 
         </LinearLayout>
 

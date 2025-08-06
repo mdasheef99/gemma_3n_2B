@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity(),
     private var isPushToDatabaseMode = false
     private var pendingBooksList: List<String> = emptyList()
     private var currentBookIndex = 0
+    private var isSearchMode = false
 
     companion object {
         private const val TAG = "MainActivity"
@@ -328,25 +329,28 @@ class MainActivity : AppCompatActivity(),
         Log.d(TAG, "Search Inventory action selected")
 
         val guidanceMessage = """
-            🔍 **Search Inventory Selected**
+            🔍 **Search Inventory**
 
-            **Search Options:**
-            • Find books by [Author Name]
-            • Search for [Book Title]
-            • Books in location [Location]
-            • Show [condition] books (new/used)
-
-            **Examples:**
-            • "Find books by James Clear"
-            • "Search for Atomic Habits"
-            • "Books in location A-1"
-            • "Show used books"
+            Type what you're looking for:
+            • Book title (e.g., "Atomic Habits")
+            • Author name (e.g., "James Clear")
+            • Location (e.g., "A-1")
+            • Condition (e.g., "New" or "Used")
 
             **Type your search query below:**
         """.trimIndent()
 
         addSystemMessage(guidanceMessage)
+        setSearchMode(true)
         binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
+    }
+
+    /**
+     * Set search mode
+     */
+    private fun setSearchMode(enabled: Boolean) {
+        isSearchMode = enabled
+        Log.d(TAG, "Search mode set to: $enabled")
     }
 
     /**
@@ -489,6 +493,49 @@ class MainActivity : AppCompatActivity(),
         } else {
             // Subsequent messages should contain book details
             return processBookDetailsInput(message)
+        }
+    }
+
+    /**
+     * Process search message directly
+     */
+    private fun processSearchMessage(searchQuery: String) {
+        Log.d(TAG, "Processing search query: $searchQuery")
+
+        lifecycleScope.launch {
+            try {
+                // Get all books from database
+                val allBooks = bookRepository.getAllBooks().first()
+
+                // Search across multiple fields
+                val matchingBooks = allBooks.filter { book ->
+                    book.titleEnglish.contains(searchQuery, ignoreCase = true) ||
+                    book.authorEnglish.contains(searchQuery, ignoreCase = true) ||
+                    book.titleKannada?.contains(searchQuery, ignoreCase = true) == true ||
+                    book.authorKannada?.contains(searchQuery, ignoreCase = true) == true ||
+                    book.location?.contains(searchQuery, ignoreCase = true) == true ||
+                    book.condition.contains(searchQuery, ignoreCase = true)
+                }
+
+                // Display results
+                val resultMessage = if (matchingBooks.isNotEmpty()) {
+                    val bookList = matchingBooks.take(10).joinToString("\n\n") { book ->
+                        "📖 ${book.getMultilingualInventoryString()}"
+                    }
+                    "🔍 **Found ${matchingBooks.size} book(s) matching '$searchQuery':**\n\n$bookList" +
+                    if (matchingBooks.size > 10) "\n\n... and ${matchingBooks.size - 10} more books" else ""
+                } else {
+                    "🔍 **No books found matching '$searchQuery'**\n\n💡 Try different keywords or check spelling"
+                }
+
+                addSystemMessage(resultMessage)
+                setSearchMode(false) // Exit search mode after showing results
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error processing search", e)
+                addSystemMessage("⚠️ Error searching inventory. Please try again.")
+                setSearchMode(false)
+            }
         }
     }
 
@@ -775,6 +822,12 @@ class MainActivity : AppCompatActivity(),
             if (processed) {
                 return
             }
+        }
+
+        // Check if we're in search mode
+        if (isSearchMode) {
+            processSearchMessage(messageText)
+            return
         }
 
         // Regular message processing (works with or without images)
