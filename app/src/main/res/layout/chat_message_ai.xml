@@ -46,16 +46,19 @@
                 android:layout_marginBottom="4dp"
                 android:visibility="gone" />
 
-            <!-- Message text -->
+            <!-- Message text with enhanced multilingual support -->
             <TextView
                 android:id="@+id/messageText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="AI response text"
-                android:textColor="@android:color/black"
+                android:textColor="@color/md_on_secondary_container"
                 android:textSize="16sp"
-                android:lineSpacingExtra="2dp"
-                android:maxWidth="280dp" />
+                android:lineSpacingExtra="4dp"
+                android:maxWidth="320dp"
+                android:fontFamily="sans-serif"
+                android:textIsSelectable="true"
+                android:longClickable="true" />
 
         </LinearLayout>
 

@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.gemma3n.app.databinding.ActivityMainBinding
 import com.gemma3n.app.data.Book
 import com.gemma3n.app.repository.BookRepository
+import com.gemma3n.app.ai.BookRecognitionParser
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
@@ -97,6 +98,9 @@ class MainActivity : AppCompatActivity(),
 
         // Initialize chat system
         setupChatSystem()
+
+        // Add test multilingual books for testing
+        addTestMultilingualBooks()
 
         Log.d(TAG, "All components initialized successfully")
     }
@@ -286,95 +290,35 @@ class MainActivity : AppCompatActivity(),
     // ==================== INVENTORY ACTION HANDLERS ====================
 
     /**
-     * Handle "📷 Catalogue Image" action
+     * Handle "📷 Photo" action - Help with image upload
      */
     private fun handleCatalogueImageAction() {
-        Log.d(TAG, "Catalogue Image action selected")
+        Log.d(TAG, "Photo action selected")
 
-        val guidanceMessage = """
-            📷 **Catalogue Image Selected**
+        addSystemMessage("📷 **Upload a photo of books**\n\nTap the 📎 button to take/select a photo. Then ask me to analyze it (e.g., 'What books are in this image?').\n\n**After analysis:** Copy the book list, then use dropdown → 💾 Save to add to database.")
 
-            **Next Step:** Upload a photo to analyze books
-
-            **Instructions:**
-            1. Tap the 📎 button to attach an image
-            2. Select a clear photo showing book spines or covers
-            3. The system will automatically process the image and extract book information
-            4. You'll receive a structured list of detected books
-            5. Long-press the AI response to copy the book list for database storage
-
-            **Tips for best results:**
-            • Ensure good lighting and clear text
-            • Books should be clearly visible
-            • Multiple books can be processed in one image
-        """.trimIndent()
-
-        addSystemMessage(guidanceMessage)
-
-        // Scroll to show the guidance message
-        binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
+        // Automatically trigger image selection
+        showImageSelectionDialog()
     }
 
     /**
-     * Handle "💾 Push to Database" action
+     * Handle "💾 Save" action - Step 2 of two-step process
      */
     private fun handlePushToDatabaseAction() {
-        Log.d(TAG, "Push to Database action selected")
+        Log.d(TAG, "Save action selected")
 
-        val guidanceMessage = """
-            💾 **Push to Database Selected**
+        addSystemMessage("💾 **Step 2: Save books to database**\n\n1. Paste the book list you copied from photo analysis\n2. I'll ask for details for each book in format: `quantity, price, condition, location`\n\nExample: `2, 200, N, A1` (2 copies, ₹200 each, New condition, location A1)")
 
-            **Next Step:** Paste the copied book list from image analysis
-
-            **Instructions:**
-            1. Paste the book list you copied from the previous "Catalogue Image" step
-            2. The system will prompt you for additional details for each book
-            3. Provide details in this format: `quantity, price, condition, location`
-
-            **Format Examples:**
-            • Single book: `2, 200, N, 2` (2 copies, ₹200 each, New condition, location 2)
-            • Multiple books: Enter details for each book when prompted
-
-            **Condition Codes:**
-            • "N" = New condition
-            • "U" = Used condition
-
-            **Ready to paste your book list below:**
-        """.trimIndent()
-
-        addSystemMessage(guidanceMessage)
-
-        // Set a flag to indicate we're in "push to database" mode
         setPushToDatabaseMode(true)
-
-        // Scroll to show the guidance message
-        binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
     }
 
     /**
-     * Handle "➕ Add Book Manually" action
+     * Handle "➕ Add" action - simplified manual entry
      */
     private fun handleAddBookManuallyAction() {
-        Log.d(TAG, "Add Book Manually action selected")
+        Log.d(TAG, "Add action selected")
 
-        val guidanceMessage = """
-            ➕ **Add Book Manually Selected**
-
-            **Format:** Add book: [Title] by [Author] price ₹[Price] qty [Quantity] location [Location] condition [Condition]
-
-            **Example:** Add book: Atomic Habits by James Clear price ₹299 qty 5 location A-1 condition new
-
-            **Optional fields:** If not specified, defaults will be used:
-            • Price: ₹0 (you can update later)
-            • Quantity: 1
-            • Location: "Unknown"
-            • Condition: "New"
-
-            **Type your book details below:**
-        """.trimIndent()
-
-        addSystemMessage(guidanceMessage)
-        binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
+        addSystemMessage("➕ **Add book manually**\n\nFormat: Add book: [Title] by [Author] price ₹[Price] qty [Quantity]\nExample: Add book: Atomic Habits by James Clear price ₹299 qty 5")
     }
 
     /**
@@ -458,14 +402,12 @@ class MainActivity : AppCompatActivity(),
                     val booksMessage = StringBuilder("📚 **All Books in Inventory** (${allBooks.size} books)\n\n")
 
                     allBooks.forEachIndexed { index, book ->
-                        booksMessage.append("${index + 1}. **${book.titleEnglish}**\n")
-                        booksMessage.append("   Author: ${book.authorEnglish}\n")
-                        booksMessage.append("   Price: ₹${book.price ?: 0.0} | Qty: ${book.quantity} | Location: ${book.location ?: "Unknown"}\n")
-                        val sourceType = if (book.sourceImagePath != null) "AI Recognition" else "Manual Entry"
-                        booksMessage.append("   Condition: ${book.condition} | Source: $sourceType\n\n")
+                        booksMessage.append("${index + 1}. ")
+                        booksMessage.append(book.getMultilingualInventoryString())
+                        booksMessage.append("\n\n")
                     }
 
-                    booksMessage.append("💡 Use 'Search Inventory' to find specific books.")
+                    booksMessage.append("💡 Use 'Toresu' (Search) to find specific books.")
 
                     addSystemMessage(booksMessage.toString())
                 }
@@ -748,6 +690,10 @@ class MainActivity : AppCompatActivity(),
         return Pair("", "")
     }
 
+
+
+
+
     /**
      * Add a welcome message to start the conversation
      */
@@ -822,24 +768,17 @@ class MainActivity : AppCompatActivity(),
         // Scroll to show user's message
         binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
 
+        // Process the message with AI (for images or regular chat)
         // Check if we're in push to database mode
         if (isPushToDatabaseMode) {
             val processed = processPushToDatabaseMessage(messageText)
             if (processed) {
-                // Message was handled by push to database workflow
                 return
             }
-            // If not processed, fall through to normal AI processing
         }
 
-        // Process the message with AI (for images or regular chat)
-        if (hasImage) {
-            // For images, automatically process without additional prompting
-            processMessageWithAI("Analyze this image and extract all visible book information. List each book with title and author in a clear, structured format.")
-        } else {
-            // Regular message processing
-            processMessageWithAI(messageText)
-        }
+        // Regular message processing (works with or without images)
+        processMessageWithAI(messageText)
     }
 
     /**
@@ -871,20 +810,13 @@ class MainActivity : AppCompatActivity(),
                 // Process on background thread - check if image is attached
                 val bitmap = imageProcessor.getCurrentBitmap()
 
-                // ENHANCED: Use inventory command processing for better natural language understanding
-                val response = try {
-                    Log.d(TAG, "Processing message with inventory command detection")
-                    modelManager.processInventoryCommand(message, bitmap)
-                } catch (e: Exception) {
-                    Log.w(TAG, "Inventory command processing failed, falling back to basic AI processing", e)
-                    // Fallback to original processing if inventory processing fails
-                    if (bitmap != null) {
-                        Log.d(TAG, "Fallback: Processing message with image attachment")
-                        modelManager.processImageQuestion(message, bitmap)
-                    } else {
-                        Log.d(TAG, "Fallback: Processing text-only message")
-                        modelManager.processTextQuestion(message)
-                    }
+                // Use simple message processing
+                val response = if (bitmap != null) {
+                    Log.d(TAG, "Processing message with image")
+                    modelManager.processImageQuestion(message, bitmap)
+                } else {
+                    Log.d(TAG, "Processing text message")
+                    modelManager.processTextQuestion(message)
                 }
 
                 // ENHANCED: Process inventory command results before displaying
@@ -1229,8 +1161,8 @@ class MainActivity : AppCompatActivity(),
                 }
 
                 return if (matchingBooks.isNotEmpty()) {
-                    val bookList = matchingBooks.take(10).joinToString("\n") { book ->
-                        "📖 ${book.getDisplayString()}"
+                    val bookList = matchingBooks.take(10).joinToString("\n\n") { book ->
+                        "📖 ${book.getMultilingualInventoryString()}"
                     }
                     "🔍 Found ${matchingBooks.size} book(s) matching '$searchQuery':\n\n$bookList" +
                     if (matchingBooks.size > 10) "\n\n... and ${matchingBooks.size - 10} more books" else ""
@@ -1631,6 +1563,76 @@ class MainActivity : AppCompatActivity(),
 
             Use these commands to test the database functionality!
         """.trimIndent()
+    }
+
+    /**
+     * Add test multilingual books for testing the UI
+     */
+    private fun addTestMultilingualBooks() {
+        lifecycleScope.launch {
+            try {
+                // Check if test books already exist
+                val existingBooks = bookRepository.getAllBooks().first()
+                if (existingBooks.isNotEmpty()) {
+                    Log.d(TAG, "Test books already exist, skipping creation")
+                    return@launch
+                }
+
+                Log.d(TAG, "Adding test multilingual books...")
+
+                // Test Book 1: English + Kannada
+                val book1 = Book(
+                    titleEnglish = "Atomic Habits",
+                    titleKannada = "ಪರಮಾಣು ಅಭ್ಯಾಸಗಳು",
+                    authorEnglish = "James Clear",
+                    authorKannada = "ಜೇಮ್ಸ್ ಕ್ಲಿಯರ್",
+                    price = 299.0,
+                    quantity = 5,
+                    location = "A-1",
+                    condition = "New",
+                    extractionConfidence = "HIGH",
+                    sourceImagePath = "test_image_1"
+                )
+
+                // Test Book 2: English only (to test fallback)
+                val book2 = Book(
+                    titleEnglish = "The Power of Now",
+                    titleKannada = null,
+                    authorEnglish = "Eckhart Tolle",
+                    authorKannada = null,
+                    price = 250.0,
+                    quantity = 3,
+                    location = "B-2",
+                    condition = "New",
+                    extractionConfidence = "MEDIUM",
+                    sourceImagePath = "test_image_2"
+                )
+
+                // Test Book 3: Another multilingual book
+                val book3 = Book(
+                    titleEnglish = "Sapiens",
+                    titleKannada = "ಸೇಪಿಯನ್ಸ್",
+                    authorEnglish = "Yuval Noah Harari",
+                    authorKannada = "ಯುವಾಲ್ ನೋಹ್ ಹರಾರಿ",
+                    price = 399.0,
+                    quantity = 2,
+                    location = "C-3",
+                    condition = "Used",
+                    extractionConfidence = "HIGH",
+                    sourceImagePath = "test_image_3"
+                )
+
+                // Insert test books
+                bookRepository.insertBook(book1)
+                bookRepository.insertBook(book2)
+                bookRepository.insertBook(book3)
+
+                Log.d(TAG, "Test multilingual books added successfully")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding test books", e)
+            }
+        }
     }
 
 }

@@ -21,15 +21,20 @@
     <string name="download_failed">Download failed: %1$s</string>
     <string name="no_internet">No internet connection available</string>
 
-    <!-- Inventory Actions Dropdown -->
+    <!-- Inventory Actions Dropdown with Actual Kannada Script -->
     <string-array name="inventory_actions">
-        <item>📋 Select Action</item>
-        <item>📷 Catalogue Image</item>
-        <item>💾 Push to Database</item>
-        <item>➕ Add Book Manually</item>
-        <item>🔍 Search Inventory</item>
-        <item>📊 Show Statistics</item>
-        <item>📚 View All Books</item>
-        <item>❓ Help</item>
+        <item>📋 ಆಯ್ಕೆ</item>
+        <item>📷 ಚಿತ್ರ</item>
+        <item>💾 ಉಳಿಸು</item>
+        <item>➕ ಸೇರಿಸು</item>
+        <item>🔍 ಹುಡುಕು</item>
+        <item>📊 ಅಂಕಿಅಂಶ</item>
+        <item>📚 ನೋಡು</item>
+        <item>❓ ಸಹಾಯ</item>
     </string-array>
+
+    <!-- Multilingual Support Strings -->
+    <string name="kannada_not_available">(ಕನ್ನಡದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ)</string>
+    <string name="book_display_format">%1$s (%2$s) by %3$s (%4$s)</string>
+    <string name="book_display_format_english_only">%1$s by %2$s</string>
 </resources>

@@ -210,7 +210,7 @@
             android:padding="12dp"
             android:background="@color/light_gray"
             android:elevation="8dp"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -235,11 +235,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 android:hint="Type your message..."
-                android:inputType="textMultiLine|textCapSentences"
-                android:maxLines="4"
-                android:minHeight="52dp"
+                android:inputType="textCapSentences"
+                android:maxLines="2"
+                android:minHeight="56dp"
+                android:maxHeight="80dp"
                 android:padding="16dp"
                 android:textSize="16sp"
                 android:textColor="@android:color/black"
@@ -247,22 +248,24 @@
                 android:background="@android:drawable/edit_text"
                 android:backgroundTint="@android:color/white" />
 
-            <!-- Inventory Actions Dropdown -->
+            <!-- Enhanced Multilingual Inventory Actions Dropdown -->
             <Spinner
                 android:id="@+id/inventoryActionsSpinner"
-                android:layout_width="wrap_content"
-                android:layout_height="52dp"
+                android:layout_width="140dp"
+                android:layout_height="56dp"
                 android:layout_marginEnd="8dp"
-                android:layout_gravity="bottom"
-                android:minWidth="120dp"
-                android:background="@android:drawable/btn_dropdown"
-                android:backgroundTint="@color/purple_500"
-                android:contentDescription="Inventory Actions" />
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/dropdown_background"
+                android:backgroundTint="@color/md_surface_variant"
+                android:padding="12dp"
+                android:contentDescription="Inventory Actions"
+                android:textColor="@color/md_on_surface_variant"
+                android:textSize="14sp" />
 
             <Button
                 android:id="@+id/sendButton"
                 android:layout_width="wrap_content"
-                android:layout_height="52dp"
+                android:layout_height="56dp"
                 android:layout_gravity="bottom"
                 android:text="Send"
                 android:textSize="16sp"
@@ -270,7 +273,7 @@
                 android:textColor="@android:color/white"
                 android:background="@android:drawable/btn_default"
                 android:backgroundTint="@color/teal_700"
-                android:minWidth="90dp" />
+                android:minWidth="80dp" />
 
         </LinearLayout>
 

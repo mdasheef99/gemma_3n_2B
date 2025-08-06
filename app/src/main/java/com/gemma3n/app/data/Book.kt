@@ -101,6 +101,41 @@ data class Book(
     }
 
     /**
+     * Returns a multilingual display string for the book.
+     * Format: "English Title (ಕನ್ನಡ ಶೀರ್ಷಿಕೆ) by English Author (ಕನ್ನಡ ಲೇಖಕ)"
+     * Falls back to English-only if Kannada is not available.
+     */
+    fun getMultilingualDisplayString(): String {
+        val kannadaNotAvailable = "(ಕನ್ನಡದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ)"
+
+        val titleDisplay = if (!titleKannada.isNullOrBlank()) {
+            "$titleEnglish ($titleKannada)"
+        } else {
+            "$titleEnglish $kannadaNotAvailable"
+        }
+
+        val authorDisplay = if (!authorKannada.isNullOrBlank()) {
+            "$authorEnglish ($authorKannada)"
+        } else {
+            "$authorEnglish $kannadaNotAvailable"
+        }
+
+        return "$titleDisplay by $authorDisplay"
+    }
+
+    /**
+     * Returns a multilingual display string with inventory details.
+     * Includes price, quantity, location, and condition information.
+     */
+    fun getMultilingualInventoryString(): String {
+        val multilingualTitle = getMultilingualDisplayString()
+        val priceStr = price?.let { "₹$it" } ?: "₹0"
+        val locationStr = location ?: "AUTO"
+
+        return "$multilingualTitle\n   Price: $priceStr | Qty: $quantity | Location: $locationStr | Condition: $condition"
+    }
+
+    /**
      * Returns the total value of this book entry (price * quantity).
      */
     fun getTotalValue(): Double? {
