@@ -37,17 +37,23 @@ A comprehensive Android application featuring Google's Gemma 3n 2B language mode
 - **Model Size**: 3.1GB
 - **Context Window**: 512 tokens per session
 - **Backend**: CPU (ARM64-v8a optimized)
-- **Processing**: MediaPipe LLM framework
+- **Processing**: **Google AI Edge** via MediaPipe LLM framework
+- **Implementation**: MediaPipe Tasks GenAI (v0.10.25)
 - **Capabilities**: Text generation, image analysis, structured data extraction
 
-### ⚡ **Performance Metrics (Samsung S23)**
-- **Model Initialization**: ~6 seconds
-- **AI Response Time**: 2-5 seconds per query
+### ⚡ **Performance Metrics**
+**Tested on Multiple Android Devices:**
+- **Samsung S23** (Snapdragon 8 Gen 2, 12GB RAM) - *Primary optimization target*
+- **LG Wing** (Snapdragon 765G, 8GB RAM) - *Successfully validated*
+
+**Performance Benchmarks:**
+- **Model Initialization**: 3-6 seconds (varies by device)
+- **AI Response Time**: 2-5 seconds per query (text), 5-12 seconds (image)
 - **Command Detection**: <50ms average
 - **Entity Extraction**: <100ms average
-- **Memory Usage**: ~2-3GB during inference
+- **Memory Usage**: 2-4GB during inference
 - **Database Operations**: <500ms for complex queries
-- **Architecture**: ARM64-v8a APK (optimized for Samsung S23)
+- **Architecture**: ARM64-v8a APK (optimized for modern Android devices)
 
 ### 💾 **Storage Requirements**
 - **App Size**: ~50MB
@@ -55,6 +61,41 @@ A comprehensive Android application featuring Google's Gemma 3n 2B language mode
 - **Database**: ~10MB per 1000 books
 - **Total Minimum**: 4GB free space recommended
 - **Optimal**: 8GB+ free space for best performance
+
+### 🚀 **Google AI Edge Integration**
+This application leverages **Google AI Edge** technology for optimal on-device AI performance:
+
+- **MediaPipe Tasks GenAI**: Core AI processing framework (v0.10.25)
+- **On-Device Inference**: Complete offline AI capabilities with zero network dependency
+- **ARM64 Optimization**: Specifically tuned for mobile ARM processors
+- **Memory Efficiency**: Advanced session management preventing context overflow
+- **Multimodal Processing**: Simultaneous text and image analysis capabilities
+- **Privacy-First**: All AI processing happens locally, ensuring data privacy
+
+**Key Benefits:**
+- ✅ **Zero Latency**: No network calls for AI processing
+- ✅ **Complete Privacy**: Sensitive business data never leaves the device
+- ✅ **Reliable Operation**: Works in areas with poor or no internet connectivity
+- ✅ **Cost Effective**: No ongoing API costs or subscription fees
+
+## 📱 Device Compatibility
+
+### ✅ **Tested and Verified Devices**
+- **Samsung S23** (Snapdragon 8 Gen 2, 12GB RAM) - *Primary optimization target*
+- **LG Wing** (Snapdragon 765G, 8GB RAM) - *Successfully validated*
+
+### 📋 **Minimum Requirements**
+- **Android**: API Level 26+ (Android 8.0+)
+- **Architecture**: ARM64-v8a
+- **RAM**: 4GB minimum, 6GB+ recommended
+- **Storage**: 4GB free space
+- **Processor**: Snapdragon 660+ or equivalent
+
+### 🎯 **Optimal Performance**
+- **RAM**: 8GB+ for best experience
+- **Storage**: 8GB+ free space
+- **Processor**: Snapdragon 765G+ or equivalent
+- **Android**: API Level 30+ (Android 11+)
 
 ## 🏗️ System Architecture
 
@@ -82,18 +123,18 @@ A comprehensive Android application featuring Google's Gemma 3n 2B language mode
 ## 🔧 Installation and Setup
 
 ### 📋 **Prerequisites**
-- **Device**: Samsung Galaxy S23 (primary target) or ARM64-v8a Android device
-- **Android Version**: 7.0+ (API level 24+)
+- **Device**: ARM64-v8a Android device (tested on Samsung S23 and LG Wing)
+- **Android Version**: 8.0+ (API level 26+)
 - **RAM**: Minimum 4GB (8GB+ recommended for optimal performance)
 - **Storage**: 5GB+ available space (3.1GB for model + app data)
 - **Internet**: Required for initial model download only
 
-### 📱 **Samsung Galaxy S23 Deployment**
+### 📱 **Android Device Deployment**
 
 #### **Option 1: Direct APK Installation (Recommended)**
 1. **Download APK**: Get `app-debug.apk` from the latest release or build locally
 2. **Transfer to Device**:
-   - Connect S23 via USB and copy APK to Downloads folder
+   - Connect device via USB and copy APK to Downloads folder
    - Or use cloud storage (Google Drive, OneDrive) to transfer
 3. **Enable Unknown Sources**:
    - Go to **Settings > Security > Install unknown apps**
@@ -121,7 +162,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 #### **Manual Model Deployment (Advanced)**
 If automatic download fails, manually deploy the model:
 
-**Model File Location on Samsung S23:**
+**Model File Location on Android Device:**
 ```
 /storage/emulated/0/Android/data/com.gemma3n.app/files/gemma-3n-E2B-it-int4.task
 ```
@@ -246,9 +287,10 @@ Comprehensive guidance covering:
 ## 🧪 Testing and Validation
 
 ### ✅ **Verified Devices**
-- **Samsung Galaxy S23**: Primary test device (fully optimized)
+- **Samsung Galaxy S23** (Snapdragon 8 Gen 2, 12GB RAM): Primary optimization target
+- **LG Wing** (Snapdragon 765G, 8GB RAM): Successfully validated and tested
 - **ARM64-v8a Emulators**: Android Studio emulator testing
-- **Performance Validated**: All features tested under real-world conditions
+- **Performance Validated**: All features tested under real-world conditions across multiple devices
 
 ### 🎯 **Test Coverage**
 - **Unit Tests**: 100+ test methods across all components
@@ -257,12 +299,13 @@ Comprehensive guidance covering:
 - **UI Tests**: Complete dropdown menu and chat interface testing
 - **Database Tests**: Concurrent operations, data integrity, analytics
 
-### 📊 **Performance Benchmarks (Samsung S23)**
+### 📊 **Performance Benchmarks**
+**Results from tested devices (Samsung S23 and LG Wing):**
 - **Command Detection**: <50ms average response time
 - **Entity Extraction**: <100ms average processing time
 - **Database Operations**: <500ms for complex queries
-- **AI Image Processing**: 30-60 seconds for book recognition
-- **Memory Usage**: <50MB increase under load
+- **AI Image Processing**: 5-12 seconds for book recognition (varies by device)
+- **Memory Usage**: 2-4GB during AI inference
 - **Accuracy**: >90% command detection, >85% entity extraction
 
 ## 🚨 Troubleshooting Guide
@@ -369,10 +412,11 @@ Comprehensive guidance covering:
 
 ### 🎯 **Key Achievements**
 - **Production-Ready**: Robust error handling and recovery mechanisms
-- **Performance Optimized**: <100ms processing, <50MB memory usage
+- **Performance Optimized**: Efficient processing across multiple device types
 - **User-Friendly**: Contextual feedback and actionable guidance
 - **Comprehensive**: Complete workflow from image upload to database storage
-- **Samsung S23 Optimized**: Specifically tuned for target device
+- **Multi-Device Support**: Tested and optimized for Samsung S23 and LG Wing
+- **Google AI Edge Integration**: Leveraging cutting-edge on-device AI technology
 
 ## 🔮 Future Enhancements
 
@@ -397,7 +441,8 @@ Comprehensive guidance covering:
 - **Innovation**: Real-world bookstore inventory management system
 - **Technical Excellence**: Production-ready architecture and comprehensive testing
 - **User Experience**: Intuitive dropdown menu interface with guided workflows
-- **Performance**: Optimized for Samsung Galaxy S23 deployment
+- **Performance**: Optimized for modern Android devices (tested on Samsung S23 and LG Wing)
+- **Google AI Edge**: Leveraging advanced on-device AI capabilities
 
 ### 📊 **Competitive Advantages**
 - **Complete Business Solution**: Not just a demo, but a functional inventory system
@@ -414,7 +459,7 @@ This project is part of the Google Gemma 3n Kaggle competition focusing on mobil
 - Follow the established architecture patterns
 - Maintain comprehensive test coverage
 - Document all new features thoroughly
-- Optimize for Samsung S23 performance
+- Optimize for modern Android devices (Samsung S23, LG Wing, etc.)
 - Ensure offline-first functionality
 
 ## 📄 License
@@ -435,4 +480,4 @@ This project is developed for educational and competition purposes as part of th
 
 For issues, questions, or contributions related to this Kaggle competition entry, please refer to the comprehensive documentation in the `/docs` folder or the troubleshooting guide above.
 
-**🎯 Ready for Samsung Galaxy S23 deployment and real-world bookstore inventory management!**
+**🎯 Ready for Android device deployment and real-world bookstore inventory management!**
