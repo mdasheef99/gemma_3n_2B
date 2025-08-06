@@ -1624,19 +1624,21 @@ class MainActivity : AppCompatActivity(),
     private fun addTestMultilingualBooks() {
         lifecycleScope.launch {
             try {
-                // Check if test books already exist
+                // Clear existing test books to update with phonetic data
                 val existingBooks = bookRepository.getAllBooks().first()
                 if (existingBooks.isNotEmpty()) {
-                    Log.d(TAG, "Test books already exist, skipping creation")
-                    return@launch
+                    Log.d(TAG, "Clearing existing test books to update with phonetic Kannada")
+                    existingBooks.forEach { book ->
+                        bookRepository.deleteBook(book)
+                    }
                 }
 
                 Log.d(TAG, "Adding test multilingual books...")
 
-                // Test Book 1: English + Kannada
+                // Test Book 1: English + Phonetic Kannada
                 val book1 = Book(
                     titleEnglish = "Atomic Habits",
-                    titleKannada = "ಪರಮಾಣು ಅಭ್ಯಾಸಗಳು",
+                    titleKannada = "ಆಟಾಮಿಕ್ ಹ್ಯಾಬಿಟ್ಸ್",
                     authorEnglish = "James Clear",
                     authorKannada = "ಜೇಮ್ಸ್ ಕ್ಲಿಯರ್",
                     price = 299.0,
@@ -1661,7 +1663,7 @@ class MainActivity : AppCompatActivity(),
                     sourceImagePath = "test_image_2"
                 )
 
-                // Test Book 3: Another multilingual book
+                // Test Book 3: Another phonetic multilingual book
                 val book3 = Book(
                     titleEnglish = "Sapiens",
                     titleKannada = "ಸೇಪಿಯನ್ಸ್",
@@ -1675,10 +1677,25 @@ class MainActivity : AppCompatActivity(),
                     sourceImagePath = "test_image_3"
                 )
 
+                // Test Book 4: Clear phonetic example
+                val book4 = Book(
+                    titleEnglish = "Antifragile",
+                    titleKannada = "ಆಂಟಿಫ್ರಾಜೈಲ್",
+                    authorEnglish = "Nassim Nicholas Taleb",
+                    authorKannada = "ನಾಸಿಮ್ ನಿಕೋಲಸ್ ತಾಲೆಬ್",
+                    price = 450.0,
+                    quantity = 1,
+                    location = "D-4",
+                    condition = "New",
+                    extractionConfidence = "HIGH",
+                    sourceImagePath = "test_image_4"
+                )
+
                 // Insert test books
                 bookRepository.insertBook(book1)
                 bookRepository.insertBook(book2)
                 bookRepository.insertBook(book3)
+                bookRepository.insertBook(book4)
 
                 Log.d(TAG, "Test multilingual books added successfully")
 

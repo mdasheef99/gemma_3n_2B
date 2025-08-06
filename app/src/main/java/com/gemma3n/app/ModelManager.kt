@@ -116,8 +116,12 @@ Important guidelines:
 - Only include books you can clearly read the title and author
 - Use the exact format shown above with ##**## delimiters
 - If you can't read a title or author clearly, don't include that book
-- For Kannada text, provide the Kannada script if visible
-- If no Kannada information is visible, leave fields 3 and 4 blank
+- For fields 3 and 4, provide PHONETIC TRANSLITERATION in Kannada script:
+  * Convert English names/titles to Kannada letters that sound similar
+  * Example: "Atomic Habits" → "ಆಟಾಮಿಕ್ ಹ್ಯಾಬಿಟ್ಸ್" (phonetic sound)
+  * Example: "James Clear" → "ಜೇಮ್ಸ್ ಕ್ಲಿಯರ್" (phonetic sound)
+  * DO NOT translate meaning - preserve pronunciation using Kannada script
+- If you cannot generate phonetic Kannada, leave fields 3 and 4 blank
 - Be accurate - inventory depends on correct information
 
 What books can you identify in this image?
