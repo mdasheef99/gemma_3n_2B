@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -87,6 +88,11 @@ android {
 }
 
 dependencies {
+    // Room database dependencies for inventory system
+    implementation "androidx.room:room-runtime:2.6.1"
+    implementation "androidx.room:room-ktx:2.6.1"
+    kapt "androidx.room:room-compiler:2.6.1"
+
     // MediaPipe dependencies - Using Google AI Edge Gallery versions
     implementation 'com.google.mediapipe:tasks-text:0.10.21'
     implementation 'com.google.mediapipe:tasks-genai:0.10.25'
@@ -131,6 +137,9 @@ dependencies {
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
     testImplementation 'io.mockk:mockk:1.13.8'
     testImplementation 'org.robolectric:robolectric:4.11.1'
+
+    // Room testing
+    testImplementation "androidx.room:room-testing:2.6.1"
 
     // Integration testing
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

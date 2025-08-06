@@ -20,4 +20,16 @@
     <string name="download_complete">Model downloaded successfully!</string>
     <string name="download_failed">Download failed: %1$s</string>
     <string name="no_internet">No internet connection available</string>
+
+    <!-- Inventory Actions Dropdown -->
+    <string-array name="inventory_actions">
+        <item>📋 Select Action</item>
+        <item>📷 Catalogue Image</item>
+        <item>💾 Push to Database</item>
+        <item>➕ Add Book Manually</item>
+        <item>🔍 Search Inventory</item>
+        <item>📊 Show Statistics</item>
+        <item>📚 View All Books</item>
+        <item>❓ Help</item>
+    </string-array>
 </resources>

@@ -5,6 +5,11 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
+import com.gemma3n.app.ai.BookRecognitionParser
+import com.gemma3n.app.commands.ChatCommandDetector
+import com.gemma3n.app.commands.ChatIntent
+import com.gemma3n.app.commands.EntityExtractor
+import com.gemma3n.app.data.Book
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
@@ -18,9 +23,15 @@ import java.io.FileNotFoundException
 
 /**
  * ModelManager handles all Gemma 3n model lifecycle operations
+ * Enhanced for bookstore inventory management with command detection and structured parsing
  * Separated from MainActivity for better maintainability and testing
  */
 class ModelManager(private val context: Context) {
+
+    // Inventory-specific components
+    private val commandDetector = ChatCommandDetector()
+    private val entityExtractor = EntityExtractor()
+    private val bookRecognitionParser = BookRecognitionParser()
     
     /**
      * Enum representing different states of the AI model
@@ -87,6 +98,62 @@ class ModelManager(private val context: Context) {
         private const val TAG = "ModelManager"
         private const val MODEL_FILENAME = "gemma-3n-E2B-it-int4.task"
         private const val MIN_MODEL_SIZE_BYTES = 2_000_000_000L // 2GB minimum (3.1GB expected)
+
+        // Inventory-specific prompt templates
+        private const val BOOK_CATALOGING_PROMPT = """
+You are an expert librarian helping to catalog books from images for a bookstore inventory system.
+
+Please analyze this image and identify all visible books. For each book you can clearly see, provide the information in this EXACT format:
+
+##**##
+I. 1. [English Title]
+   2. [English Author]
+   3. [Kannada Title if visible, otherwise leave blank]
+   4. [Kannada Author if visible, otherwise leave blank]
+##**##
+
+Important guidelines:
+- Only include books you can clearly read the title and author
+- Use the exact format shown above with ##**## delimiters
+- If you can't read a title or author clearly, don't include that book
+- For Kannada text, provide the Kannada script if visible
+- If no Kannada information is visible, leave fields 3 and 4 blank
+- Be accurate - inventory depends on correct information
+
+What books can you identify in this image?
+"""
+
+        private const val INVENTORY_SEARCH_PROMPT = """
+You are helping with a bookstore inventory search. The user is looking for books in the inventory.
+
+User query: "%s"
+
+Please provide a helpful response about searching for books. If this seems like a specific search request, acknowledge it and explain what information would be helpful for the search.
+
+Keep your response concise and focused on inventory management.
+"""
+
+        private const val MANUAL_BOOK_ENTRY_PROMPT = """
+You are helping with manual book entry for a bookstore inventory system.
+
+The user provided this information: "%s"
+
+Please help extract and organize the book information. If the information is incomplete, ask for the missing details needed for inventory entry (title, author, price, quantity, location, condition).
+
+Keep your response helpful and focused on getting complete book information for inventory.
+"""
+
+        private const val GENERAL_INVENTORY_PROMPT = """
+You are an AI assistant for a bookstore inventory management system. You help with:
+- Book cataloging from images
+- Manual book entry
+- Inventory searches
+- Book information management
+
+User message: "%s"
+
+Please provide a helpful response related to bookstore inventory management.
+"""
     }
     
     /**
@@ -607,6 +674,242 @@ class ModelManager(private val context: Context) {
             message.contains("Model file not found") -> "Model file is missing"
             else -> message.take(100) // Limit length
         }
+    }
+
+    // ==================== INVENTORY-SPECIFIC METHODS ====================
+
+    /**
+     * Process inventory command with natural language understanding.
+     *
+     * @param message User's natural language message
+     * @param bitmap Optional image for book cataloging
+     * @return AI response or structured data based on intent
+     */
+    suspend fun processInventoryCommand(message: String, bitmap: Bitmap? = null): String {
+        Log.d(TAG, "Processing inventory command: $message")
+
+        try {
+            // Detect user intent
+            val intent = commandDetector.detectIntent(message, bitmap != null)
+            Log.d(TAG, "Detected intent: ${intent.getDescription()}")
+
+            return when (intent) {
+                is ChatIntent.BookCataloging -> {
+                    if (bitmap != null) {
+                        processBookCataloging(bitmap)
+                    } else {
+                        "Please attach an image of the books you want to catalog."
+                    }
+                }
+
+                is ChatIntent.ManualBookEntry -> {
+                    processManualBookEntry(intent)
+                }
+
+                is ChatIntent.InventorySearch -> {
+                    processInventorySearch(intent)
+                }
+
+                is ChatIntent.InventoryHelp -> {
+                    getInventoryHelp()
+                }
+
+                is ChatIntent.RegularChat -> {
+                    // Use general inventory prompt for regular chat
+                    processTextQuestion(GENERAL_INVENTORY_PROMPT.format(message))
+                }
+
+                else -> {
+                    // For other intents, provide helpful guidance
+                    "I understand you want to ${intent.getDescription()}. This feature is being developed. For now, I can help with:\n" +
+                    "• Book cataloging from images\n" +
+                    "• Manual book entry\n" +
+                    "• Inventory searches\n" +
+                    "• General inventory questions"
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error processing inventory command", e)
+            return "I encountered an error processing your request. Please try again or rephrase your message."
+        }
+    }
+
+    /**
+     * Process book cataloging from image with structured response parsing.
+     */
+    private suspend fun processBookCataloging(bitmap: Bitmap): String {
+        Log.d(TAG, "Processing book cataloging from image")
+
+        try {
+            // Use specialized book cataloging prompt
+            val aiResponse = processImageQuestion(BOOK_CATALOGING_PROMPT, bitmap)
+
+            // Parse the structured response
+            val parsingResult = bookRecognitionParser.parseResponse(aiResponse)
+
+            if (parsingResult.success) {
+                val validBooks = parsingResult.getValidBooks()
+                if (validBooks.isNotEmpty()) {
+                    val bookSummary = validBooks.mapIndexed { index, book ->
+                        "📖 Book ${index + 1}: ${book.englishTitle} by ${book.englishAuthor}" +
+                        if (!book.kannadaTitle.isNullOrBlank()) "\n   Kannada: ${book.kannadaTitle} by ${book.kannadaAuthor}" else ""
+                    }.joinToString("\n\n")
+
+                    return "✅ Successfully identified ${validBooks.size} book(s):\n\n$bookSummary\n\n" +
+                           "Would you like me to add these books to the inventory?"
+                } else {
+                    return "I could see the image but couldn't clearly identify any book titles and authors. " +
+                           "Please ensure the book covers are clearly visible and try again."
+                }
+            } else {
+                return "I analyzed the image but had trouble extracting book information. " +
+                       "Please make sure the book titles and authors are clearly visible and try again."
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in book cataloging", e)
+            return "I encountered an error while analyzing the image. Please try again."
+        }
+    }
+
+    /**
+     * Process manual book entry with entity extraction.
+     */
+    private suspend fun processManualBookEntry(intent: ChatIntent.ManualBookEntry): String {
+        Log.d(TAG, "Processing manual book entry")
+
+        try {
+            // If we already have extracted information from the intent, use it
+            if (!intent.extractedTitle.isNullOrBlank() && !intent.extractedAuthor.isNullOrBlank()) {
+                return "✅ Book information extracted:\n" +
+                       "📖 Title: ${intent.extractedTitle}\n" +
+                       "👤 Author: ${intent.extractedAuthor}\n" +
+                       (intent.extractedPrice?.let { "💰 Price: ₹$it\n" } ?: "") +
+                       (intent.extractedQuantity?.let { "📦 Quantity: $it\n" } ?: "") +
+                       (intent.extractedLocation?.let { "📍 Location: $it\n" } ?: "") +
+                       "\nWould you like me to add this book to the inventory?"
+            }
+
+            // Otherwise, extract information from the message
+            val bookInfo = entityExtractor.extractBookInfo(intent.message)
+
+            if (bookInfo.isValid()) {
+                return "✅ Book information extracted:\n" +
+                       "📖 Title: ${bookInfo.title}\n" +
+                       "👤 Author: ${bookInfo.author}\n" +
+                       (bookInfo.price?.let { "💰 Price: ₹$it\n" } ?: "") +
+                       (bookInfo.quantity?.let { "📦 Quantity: $it\n" } ?: "") +
+                       (bookInfo.location?.let { "📍 Location: $it\n" } ?: "") +
+                       (bookInfo.condition?.let { "📋 Condition: $it\n" } ?: "") +
+                       "\nConfidence: ${(bookInfo.confidence * 100).toInt()}%\n" +
+                       "\nWould you like me to add this book to the inventory?"
+            } else {
+                // Use AI to help extract missing information
+                return processTextQuestion(MANUAL_BOOK_ENTRY_PROMPT.format(intent.message))
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in manual book entry", e)
+            return "I had trouble extracting the book information. Please provide the title and author clearly, like: 'Add book: Atomic Habits by James Clear'"
+        }
+    }
+
+    /**
+     * Process inventory search requests.
+     */
+    private suspend fun processInventorySearch(intent: ChatIntent.InventorySearch): String {
+        Log.d(TAG, "Processing inventory search: ${intent.searchType}")
+
+        try {
+            val searchQuery = entityExtractor.extractSearchQuery(intent.query, intent.searchType)
+
+            return when (intent.searchType) {
+                ChatIntent.InventorySearch.SearchType.BY_AUTHOR -> {
+                    "🔍 Searching for books by author: '$searchQuery'\n\n" +
+                    "This search will look through all authors in the inventory. " +
+                    "The actual search results would be displayed here from the database."
+                }
+
+                ChatIntent.InventorySearch.SearchType.BY_TITLE -> {
+                    "🔍 Searching for books with title: '$searchQuery'\n\n" +
+                    "This search will look through all book titles in the inventory. " +
+                    "The actual search results would be displayed here from the database."
+                }
+
+                ChatIntent.InventorySearch.SearchType.BY_LOCATION -> {
+                    "🔍 Searching for books in location: '$searchQuery'\n\n" +
+                    "This search will show all books stored in this location. " +
+                    "The actual search results would be displayed here from the database."
+                }
+
+                ChatIntent.InventorySearch.SearchType.RECENT -> {
+                    "🔍 Showing recently added books\n\n" +
+                    "This will display the most recently added books to the inventory. " +
+                    "The actual search results would be displayed here from the database."
+                }
+
+                ChatIntent.InventorySearch.SearchType.LOW_STOCK -> {
+                    "🔍 Showing books with low stock\n\n" +
+                    "This will display books that are running low in quantity. " +
+                    "The actual search results would be displayed here from the database."
+                }
+
+                else -> {
+                    "🔍 General search for: '$searchQuery'\n\n" +
+                    "This search will look through titles, authors, and other book information. " +
+                    "The actual search results would be displayed here from the database."
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in inventory search", e)
+            return "I had trouble processing your search request. Please try rephrasing your search query."
+        }
+    }
+
+    /**
+     * Get inventory help information.
+     */
+    private fun getInventoryHelp(): String {
+        return """
+📚 **Bookstore Inventory Assistant**
+
+I can help you with:
+
+🖼️ **Book Cataloging from Images**
+• Take a photo of books and I'll identify them
+• Say: "Catalog these books" or "What books are in this image?"
+
+✍️ **Manual Book Entry**
+• Add books by typing details
+• Say: "Add book: Title by Author" or "Book: Title, Author: Name, Price: ₹299"
+
+🔍 **Inventory Search**
+• Find books in your inventory
+• Say: "Find books by James Clear" or "Show books in location A-5"
+
+📊 **Inventory Analytics**
+• Get statistics about your inventory
+• Say: "How many books do we have?" or "Show inventory stats"
+
+💡 **Tips:**
+• Be specific with book titles and authors
+• Include price, quantity, and location when adding books
+• Use clear, well-lit photos for book cataloging
+
+What would you like to do?
+        """.trimIndent()
+    }
+
+    /**
+     * Get parsed books from the last cataloging operation.
+     * This method would be used by the UI to get structured book data.
+     */
+    fun getLastParsedBooks(): List<Book> {
+        // This would store the last parsing result for UI access
+        // For now, return empty list as this requires state management
+        return emptyList()
     }
 
     /**

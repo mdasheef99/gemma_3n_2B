@@ -96,4 +96,15 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      * Get the last message
      */
     fun getLastMessage(): ChatMessage? = messages.lastOrNull()
+
+    /**
+     * Remove the last message (useful for removing typing indicators)
+     */
+    fun removeLastMessage() {
+        if (messages.isNotEmpty()) {
+            val lastIndex = messages.size - 1
+            messages.removeAt(lastIndex)
+            notifyItemRemoved(lastIndex)
+        }
+    }
 }
